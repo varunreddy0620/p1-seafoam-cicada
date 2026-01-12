@@ -1,6 +1,6 @@
-
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
+from typing import Optional
 import json, os, re
 
 app = FastAPI(title="Phase 1 Mock API")
@@ -17,19 +17,21 @@ REPLIES = load("replies.json")
 
 class TriageInput(BaseModel):
     ticket_text: str
-    order_id: str | None = None
+    order_id: Optional[str] = None
 
 @app.get("/health")
-def health(): return {"status": "ok"}
+def health(): 
+    return {"status": "ok"}
 
 @app.get("/orders/get")
 def orders_get(order_id: str = Query(...)):
     for o in ORDERS:
-        if o["order_id"] == order_id: return o
+        if o["order_id"] == order_id: 
+            return o
     raise HTTPException(status_code=404, detail="Order not found")
 
 @app.get("/orders/search")
-def orders_search(customer_email: str | None = None, q: str | None = None):
+def orders_search(customer_email: Optional[str] = None, q: Optional[str] = None):
     matches = []
     for o in ORDERS:
         if customer_email and o["email"].lower() == customer_email.lower():
@@ -48,7 +50,8 @@ def classify_issue(payload: dict):
 
 def render_reply(issue_type: str, order):
     template = next((r["template"] for r in REPLIES if r["issue_type"] == issue_type), None)
-    if not template: template = "Hi {{customer_name}}, we are reviewing order {{order_id}}."
+    if not template: 
+        template = "Hi {{customer_name}}, we are reviewing order {{order_id}}."
     return template.replace("{{customer_name}}", order.get("customer_name","Customer")).replace("{{order_id}}", order.get("order_id",""))
 
 @app.post("/reply/draft")
@@ -61,10 +64,13 @@ def triage_invoke(body: TriageInput):
     order_id = body.order_id
     if not order_id:
         m = re.search(r"(ORD\d{4})", text, re.IGNORECASE)
-        if m: order_id = m.group(1).upper()
-    if not order_id: raise HTTPException(status_code=400, detail="order_id missing and not found in text")
+        if m: 
+            order_id = m.group(1).upper()
+    if not order_id: 
+        raise HTTPException(status_code=400, detail="order_id missing and not found in text")
     order = next((o for o in ORDERS if o["order_id"] == order_id), None)
-    if not order: raise HTTPException(status_code=404, detail="order not found")
+    if not order: 
+        raise HTTPException(status_code=404, detail="order not found")
     issue = classify_issue({"ticket_text": text})
     reply = reply_draft({"ticket_text": text, "order": order, "issue_type": issue["issue_type"]})
     return {"order_id": order_id, "issue_type": issue["issue_type"], "order": order, "reply_text": reply["reply_text"]}
