@@ -110,7 +110,7 @@ p1-seafoam-cicada/
 
 ## Demo Video
 
-🎥 [Watch Loom Demo](YOUR_LOOM_LINK_HERE)
+🎥 [Watch Loom Demo](https://www.loom.com/share/8061a6a37992474b86fc2582ed9a1f5b)
 
 ## License
 MIT
